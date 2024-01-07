@@ -139,5 +139,4 @@ public sealed class Booking : Entity
 
         return Result.Success();
     }
-
 }
