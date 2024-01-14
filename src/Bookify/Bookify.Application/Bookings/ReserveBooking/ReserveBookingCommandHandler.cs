@@ -1,5 +1,6 @@
 ﻿using Bookify.Application.Abstractions.Clock;
 using Bookify.Application.Abstractions.Messaging;
+using Bookify.Application.Exceptions;
 using Bookify.Domain.Abstractions;
 using Bookify.Domain.Apartments;
 using Bookify.Domain.Bookings;
@@ -32,39 +33,47 @@ internal sealed class ReserveBookingCommandHandler : ICommandHandler<ReserveBook
         _dateTimeProvider = dateTimeProvider;
     }
 
-
     public async Task<Result<Guid>> Handle(ReserveBookingCommand request, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+
         if (user is null)
         {
             return Result.Failure<Guid>(UserErrors.NotFound);
         }
 
-        var apartment = await _apartmentRepository.GetByIdAsync(request.AppartmentId, cancellationToken);
+        var apartment = await _apartmentRepository.GetByIdAsync(request.ApartmentId, cancellationToken);
+
         if (apartment is null)
         {
-            return Result.Failure<Guid>(ApartmenErrors.NotFound);
+            return Result.Failure<Guid>(ApartmentErrors.NotFound);
         }
 
         var duration = DateRange.Create(request.StartDate, request.EndDate);
-        
+
         if (await _bookingRepository.IsOverlappingAsync(apartment, duration, cancellationToken))
         {
             return Result.Failure<Guid>(BookingErrors.Overlap);
         }
 
-        var booking = Booking.Reserve(
-            apartment,
-            user.Id,
-            duration,
-            utcNow: _dateTimeProvider.UtcNow,
-            _pricingService);
+        try
+        {
+            var booking = Booking.Reserve(
+                apartment,
+                user.Id,
+                duration,
+                _dateTimeProvider.UtcNow,
+                _pricingService);
 
-        _bookingRepository.Add(booking);
+            _bookingRepository.Add(booking);
 
-        await  _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return booking.Id;
+            return booking.Id;
+        }
+        catch (ConcurrencyException)
+        {
+            return Result.Failure<Guid>(BookingErrors.Overlap);
+        }
     }
 }

@@ -4,11 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Bookify.Application.Abstractions.Behaviors;
 
-public class LoggingBehavior<TRequest, TResponse>(ILogger logger)
+public class LoggingBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IBaseCommand
 {
-    private readonly ILogger _logger = logger;
+    private readonly ILogger<TRequest> _logger;
+
+    public LoggingBehavior(ILogger<TRequest> logger)
+    {
+        _logger = logger;
+    }
 
     public async Task<TResponse> Handle(
         TRequest request,
@@ -16,23 +21,21 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger logger)
         CancellationToken cancellationToken)
     {
         var name = request.GetType().Name;
-         
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return default!;
-        }
 
         try
         {
             _logger.LogInformation("Executing command {Command}", name);
+
             var result = await next();
+
             _logger.LogInformation("Command {Command} processed successfully", name);
 
             return result;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            _logger.LogError("Command {Command} processing failed", name);
+            _logger.LogError(exception, "Command {Command} processing failed", name);
+
             throw;
         }
     }

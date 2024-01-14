@@ -1,9 +1,11 @@
-﻿using Bookify.Application.Abstractions.Behaviors;
+﻿namespace Bookify.Application.Exceptions;
 
-namespace Bookify.Application.Exceptions
+public sealed class ValidationException : Exception
 {
-    public class ValidationException(IEnumerable<ValidationError> errors) : Exception
+    public ValidationException(IEnumerable<ValidationError> errors)
     {
-        public IEnumerable<ValidationError> Errors { get; } = errors;
+        Errors = errors;
     }
+
+    public IEnumerable<ValidationError> Errors { get; }
 }

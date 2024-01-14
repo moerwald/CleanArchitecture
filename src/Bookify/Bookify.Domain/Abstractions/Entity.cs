@@ -1,16 +1,32 @@
-﻿namespace Bookify.Domain.Abstractions
+﻿namespace Bookify.Domain.Abstractions;
+
+public abstract class Entity
 {
-    public abstract class Entity
+    private readonly List<IDomainEvent> _domainEvents = new();
+
+    protected Entity(Guid id)
     {
-        private readonly List<IDomainEvent> _domainEvents = [];
-        protected Entity(Guid id) => Id = id;
+        Id = id;
+    }
 
-        public Guid Id { get; init; }
+    protected Entity()
+    {
+    }
 
-        public IReadOnlyList<IDomainEvent> GetDomainEvents() => _domainEvents.ToList();
+    public Guid Id { get; init; }
 
-        public void ClearDomainEvents() => _domainEvents.Clear();
+    public IReadOnlyList<IDomainEvent> GetDomainEvents()
+    {
+        return _domainEvents.ToList();
+    }
 
-        protected void RaiseDomainEvent(IDomainEvent domainEvent) => _domainEvents.Add(domainEvent);
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
+    }
+
+    protected void RaiseDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
     }
 }

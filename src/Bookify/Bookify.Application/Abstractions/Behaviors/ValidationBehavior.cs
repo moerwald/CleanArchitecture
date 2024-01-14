@@ -1,16 +1,20 @@
 ﻿using Bookify.Application.Abstractions.Messaging;
+using Bookify.Application.Exceptions;
 using FluentValidation;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Bookify.Application.Abstractions.Behaviors;
 
 public class ValidationBehavior<TRequest, TResponse>
-    (IEnumerable<IValidator<TRequest>> validators)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IBaseCommand
 {
-    private readonly IEnumerable<IValidator<TRequest>> _validators = validators;
+    private readonly IEnumerable<IValidator<TRequest>> _validators;
+
+    public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+    {
+        _validators = validators;
+    }
 
     public async Task<TResponse> Handle(
         TRequest request,
@@ -23,10 +27,11 @@ public class ValidationBehavior<TRequest, TResponse>
         }
 
         var context = new ValidationContext<TRequest>(request);
+
         var validationErrors = _validators
-            .Select(v => v.Validate(context))
-            .Where(v => v.Errors.Any())
-            .SelectMany(v => v.Errors)
+            .Select(validator => validator.Validate(context))
+            .Where(validationResult => validationResult.Errors.Any())
+            .SelectMany(validationResult => validationResult.Errors)
             .Select(validationFailure => new ValidationError(
                 validationFailure.PropertyName,
                 validationFailure.ErrorMessage))

@@ -1,4 +1,4 @@
-﻿namespace Bookify.Application.Abstractions.EMail;
+﻿namespace Bookify.Application.Abstractions.Email;
 
 public interface IEmailService
 {

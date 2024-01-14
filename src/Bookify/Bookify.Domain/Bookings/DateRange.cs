@@ -2,11 +2,12 @@
 
 public record DateRange
 {
-    private DateRange() 
-    { 
+    private DateRange()
+    {
     }
 
     public DateOnly Start { get; init; }
+
     public DateOnly End { get; init; }
 
     public int LengthInDays => End.DayNumber - Start.DayNumber;
@@ -18,6 +19,10 @@ public record DateRange
             throw new ApplicationException("End date precedes start date");
         }
 
-        return new DateRange() { Start = start, End = end };
+        return new DateRange
+        {
+            Start = start,
+            End = end
+        };
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace Bookify.Domain.Bookings
+﻿namespace Bookify.Domain.Bookings;
+
+public enum BookingStatus
 {
-    public enum BookingStatus
-    {
-        Reserved = 1,
-        Confirmend = 2,
-        Rejected = 3,
-        Cancelled = 4,
-        Completed = 5,
-    }
+    Reserved = 1,
+    Confirmed = 2,
+    Rejected = 3,
+    Cancelled = 4,
+    Completed = 5
 }

@@ -14,7 +14,7 @@ internal sealed class SearchAppartmentsQueryHandler(
     private static readonly int[] ActiveBookingStatuses =
     {
         (int)BookingStatus.Reserved,
-        (int)BookingStatus.Confirmend,
+        (int)BookingStatus.Confirmed,
         (int)BookingStatus.Completed,
     };
 
@@ -64,7 +64,7 @@ internal sealed class SearchAppartmentsQueryHandler(
                 request.StartDate,
                 request.EndDate,
                 ActiveBookingStatuses
-            },
+            }, 
             splitOn: "Country");
 
 
